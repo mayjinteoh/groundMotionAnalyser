@@ -27,7 +27,7 @@ class plotter:
     self.inventory = obspyInterface.inventory
 
   def plotev(self):
-    map = self.categories.plot(projection = "local")
+    map = self.categories.plot(projection = "ortho")
     return map
 
 # Unit testing 
