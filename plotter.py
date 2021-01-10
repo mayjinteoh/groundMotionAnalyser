@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" obspyInterface contains the class which mainly focuses on interfacing with obspy APIs.
+""" plotter contains the class which mainly focuses on interfacing with plotting graphs and images.
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
