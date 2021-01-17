@@ -26,6 +26,7 @@ from obspy import read_inventory
 import numpy as np
 from obspy.core.util import (BASEMAP_VERSION, CARTOPY_VERSION, MATPLOTLIB_VERSION, PROJ4_VERSION)
 from obspy import Stream
+import math
 
 class obspyInterface:
   def __init__(self, client):
@@ -104,13 +105,13 @@ class obspyInterface:
     self.setyear(startyr)
     self.start = UTCDateTime(self.startyr, 1, 1, 0, 0, 0)
     self.end = UTCDateTime(self.endyr, 12, 31, 23, 59, 59)
-    self.cat = self.client.get_events(starttime = self.start, endtime = self.end, minmagnitude = self.minmag)
+    self.cat = self.client.get_events(starttime = self.start, endtime = self.end, minmagnitude = self.minmag, minlongitude = -178.00417, minlatitude = -46.56069, maxlongitude = -176.55973, maxlatitude = -35.22676)
     return self.cat
 
   def SearchByYrtoYr(self, startyr, endyr):
     self.start = UTCDateTime(self.startyr, 1, 1, 0, 0, 0)
     self.end = UTCDateTime(self.endyr, 12, 31, 23, 59, 59)
-    self.cat = self.client.get_events(starttime = self.start, endtime = self.end, minmagnitude = self.minmag)
+    self.cat = self.client.get_events(starttime = self.start, endtime = self.end, minmagnitude = self.minmag, minlongitude = -178.00417, minlatitude = -46.56069, maxlongitude = -176.55973, maxlatitude = -35.22676)
     return self.cat
 
   def SearchByMonth(self, month):
@@ -128,7 +129,7 @@ class obspyInterface:
         day = 29
     self.start = UTCDateTime(self.startyr, self.startmonth, int(day), 0, 0, 0)
     self.end = UTCDateTime(self.endyr, self.endmonth, int(day), 23, 59, 59)
-    self.cat = self.client.get_events(starttime = self.start, endtime = self.end, minmagnitude = self.minmag)
+    self.cat = self.client.get_events(starttime = self.start, endtime = self.end, minmagnitude = self.minmag, minlongitude = -178.00417, minlatitude = -46.56069, maxlongitude = -176.55973, maxlatitude = -35.22676)
     return self.cat
 
   def SearchByMonthtoMonth(self, startmonth, endmonth):
@@ -155,7 +156,7 @@ class obspyInterface:
         day1 = 29
     self.start = UTCDateTime(self.startyr, self.startmonth, int(day), 0, 0, 0)
     self.end = UTCDateTime(self.endyr, self.endmonth, int(day1), 23, 59, 59)
-    self.cat = self.client.get_events(starttime = self.start, endtime = self.end, minmagnitude = self.minmag)
+    self.cat = self.client.get_events(starttime = self.start, endtime = self.end, minmagnitude = self.minmag, minlongitude = -178.00417, minlatitude = -46.56069, maxlongitude = -176.55973, maxlatitude = -35.22676)
     return self.cat
 
   def SearchByMinMag(self, minmag):
@@ -173,7 +174,7 @@ class obspyInterface:
     self.setminmag(minmag)
     self.start = UTCDateTime(self.startyr, self.startmonth, self.startday, self.starthour, 0, 0)
     self.end = UTCDateTime(self.startyr, self.endmonth, self.endday, self.endhour, 59, 59)
-    self.cat = self.client.get_events(starttime = self.start, endtime = self.end, minmagnitude = self.minmag)
+    self.cat = self.client.get_events(starttime = self.start, endtime = self.end, minmagnitude = self.minmag, minlongitude = -178.00417, minlatitude = -46.56069, maxlongitude = -176.55973, maxlatitude = -35.22676)
     self.cat.plot(projection = "local")
     return self.cat
 
@@ -184,7 +185,7 @@ class obspyInterface:
     self.setminmag(minmag)
     self.start = UTCDateTime(self.startyr, self.startmonth, self.startday, 0, 0, 0)
     self.end = UTCDateTime(self.endyr, self.endmonth, self.endday, 23, 59, 59)
-    self.cat = self.client.get_events(starttime = self.start, endtime = self.end, minmagnitude = self.minmag)
+    self.cat = self.client.get_events(starttime = self.start, endtime = self.end, minmagnitude = self.minmag, minlongitude = -178.00417, minlatitude = -46.56069, maxlongitude = -176.55973, maxlatitude = -35.22676)
     self.cat.plot(projection = "local")
     return self.cat
 
@@ -200,19 +201,26 @@ class obspyInterface:
     for ev in self.cat:
         if len(self.cat) > 1:
             for m in range(len(ev.magnitudes)):
-                if ev.magnitudes[m].magnitude_type == "M":
+                if ev.magnitudes[m].magnitude_type == "Mw":
+                    if ev.magnitudes[m].mag > self.maxmag:
+                        self.maxmag = ev.magnitudes[m].mag
+                        self.maxev = ev
+                elif ev.magnitudes[m].magnitude_type == "M":
                     if ev.magnitudes[m].mag > self.maxmag:
                         self.maxmag = ev.magnitudes[m].mag
                         self.maxev = ev
         else:
             self.maxev = ev
+    self.start = self.maxev.origin.time
+    self.end = self.start + 300
     return self.maxev
 
-  def stations(self, maxrad):
-    self.maxevent()
-    self.longitude = self.maxev.origins[0]['longitude']
-    self.latitude = self.maxev.origins[0]['latitude']
-    self.inventory = self.client.get_stations(latitude = float(self.latitude), longitude = float(self.longitude), maxradius = float(maxrad), starttime = self.start, endtime = self.end)
+  def stations(self, maxrad, cityofinterest):
+    self.longitude = cityofinterest[longitude] #placeholder - need to find out how to extract longlat of the city 
+    self.latitude = cityofinterest[latitude]
+    maxlat = self.latitude + maxrad/110.574
+    maxlong = self.longitude + 111.32*math.cos(maxlat*math.pi/180)
+    self.inventory = self.client.get_stations(latitude = float(self.latitude), longitude = float(self.longitude), maxlatitude = maxlat, maxlongitude = maxlong, starttime = self.start, endtime = self.end)
     #self.inventory = self.client.get_stations(latitude=-42.693,longitude=173.022,maxradius=0.5, starttime = "2016-11-13 11:05:00.000",endtime = "2016-11-14 11:00:00.000")
     self.inventory.plot(projection = "local")
     return self.inventory
