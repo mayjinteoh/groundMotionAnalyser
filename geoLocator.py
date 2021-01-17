@@ -74,9 +74,9 @@ class geoLocator:
 # Unit testing 
 def main():
     geoLocatorTest = geoLocator()
-    print(geoLocatorTest.getLongitude('Eiffel Tower'))
-    print(geoLocatorTest.getLatitude('Buckingham Palace'))
-    print(geoLocatorTest.getLongitudeLatitude('50 Customhouse Quay, Wellington'))
+    print('Longitude:', geoLocatorTest.getLongitude('Eiffel Tower'))
+    print('Latitude:', geoLocatorTest.getLatitude('Buckingham Palace'))
+    print('Longitude, Latitude:', geoLocatorTest.getLongitudeLatitude('50 Customhouse Quay, Wellington'))
 
 if __name__ == "__main__":
     main()
