@@ -51,7 +51,6 @@ class obspyInterface:
     self.latitude = 0.0 #latitude of the origin of the event
     self.inventory = None #list of stations
     self.st = None #stream is a list of traces. trace is waveform data of each station.
-    
 
   def setyear(self, startyr, endyr = None):
     self.startyr = int(startyr)
@@ -227,31 +226,33 @@ class obspyInterface:
     self.inventory.plot(projection = "local")
     return self.inventory
 
-  def getwaveforms(self): 
+  def getwaveforms(self, stationcode):
     self.st = Stream()
     for network in self.inventory:
-        print(network)
         for station in network:
-            print(station)
-            try:
-                self.st += self.client.get_waveforms(network.code, station.code, "*", "*",
-                                          self.start, self.end, attach_response = True) #refer to link for arguments for get waveforms: https://docs.obspy.org/packages/autogen/obspy.clients.fdsn.client.Client.get_waveforms.html?highlight=get_waveforms#obspy.clients.fdsn.client.Client.get_waveforms
-            except:
-                pass
-    self.st.plot()
+            if stationcode == station.code:
+                self.st = self.client.get_waveforms(network.code, station.code, "*", "*",
+                                          self.start, self.end, attach_response = True)
+                 #refer to link for arguments for get waveforms: https://docs.obspy.org/packages/autogen/obspy.clients.fdsn.client.Client.get_waveforms.html?highlight=get_waveforms#obspy.clients.fdsn.client.Client.get_waveforms        
+                #self.st.plot()
     return self.st
     
-  def gettrace(self):
-      self.getwaveforms()
+  def gettrace(self, stationcode):
+      self.getwaveforms(stationcode)
       for trace in self.st:
-          print(trace.data)
+          print(trace.stats)
+          print(type(trace.stats))
+ 
+    
  
 # Unit testing     
 def main():
   obspyTest = obspyInterface('GEONET')
   print(obspyTest.SearchByDate(2016, 11, 13, 0, 23, 5))
   print(obspyTest.maxevent())
-  #print(obspyTest.stations('50 customhouse quay, wellington', 5))
-  #obspyTest.gettrace()
+  print(obspyTest.stations('50 customhouse quay, wellington', 5))
+  #print(obspyTest.getwaveforms('CPLB'))
+  print(obspyTest.gettrace('CPLB'))
+  
 if __name__ == "__main__":
     main()
