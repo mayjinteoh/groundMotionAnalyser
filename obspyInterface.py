@@ -266,7 +266,7 @@ class obspyInterface:
  
   def getRS(self, stationcode, component):
       tracelist = self.gettrace(stationcode, component)
-      AvgAccnMethod(tracelist)
+      RS(tracelist)
 
 # Unit testing     
 def main():

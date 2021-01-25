@@ -34,67 +34,70 @@ def drange(x, y, jump):
     yield float(x)
     x += float(decimal.Decimal(jump))
     
-def AvgAccnMethod(tracelist, alpha = 0.5, beta = 0.25, dampingratio = 5/100):
+def RS(tracelist, alpha = 0.5, beta = 0.25, dampingratio = 5/100):
     #constant average acceleration method 
     amax = 0 #max ground displacement
     init_u = 0 #intial ground displacement
     init_v = 0 #initial ground velocity
     init_a = 0 #initial ground acceleration
     m = 1 #structure mass
-    amaxlist = []
+    ubbmax_list = []
     Tslist = []
     
     for trace in tracelist: #to obtain peak ground acceleration for each structural period
-        tstep = 1/trace.stats.sampling_rate 
+        t_delta = 1/trace.stats.sampling_rate 
+        m = 1
         for Ts in drange(0.03, 5, '0.1'):
             c = (2*math.pi/Ts)*dampingratio
-            a1 = 4*m/((tstep)**2) + 2*c/tstep
-            a2 = 4*m/(tstep) + c
-            a3 = m
-            u_list = []
-            v_list = []
-            a_list = []
-            p_list = []
+            k = (4*m*math.pi**2)/(Ts**2)
+            # a1 = 4*m/((tstep)**2) + 2*c/tstep
+            # a2 = 4*m/(tstep) + c
+            # a3 = m
+            # u_list = []
+            # v_list = []
+            # a_list = []
+            # p_list = []
             #print(Ts)
             #print(len(trace.data))
             Tslist.append(Ts)
-            
+            ubb = AvgAccnMethod(trace.data, t_delta = t_delta, m = 1, k = k, c = c)
+            ubbmax_list.append(max(ubb))
+    plt.plot(Tslist, ubbmax_list)    
+        
             #for graccn in trace.data:
-            k = (4*m*math.pi**2)/(Ts**2)
-            for i in range(0, len(trace.data)):
-                #print(i)
-                graccn = trace.data[i]
-                if i == 0:
-                    u_i = 0
-                    u_list.append(u_i)
-                    v_i = 0
-                    v_list.append(v_i)
-                    a_i = 0
-                    a_list.append(a_i)
-                    if a_i > amax:
-                        amax = a_i
-                else:
-                    p = graccn + a1*u_list[i-1] + a2*v_list[i-1] + a3*a_list[i-1]
-                    u_i = p/(k + a1)
-                    u_list.append(u_i)
-                    v_i = 2*(u_i - u_list[i-1])/(tstep)- v_list[i-1]
-                    v_list.append(v_i)
-                    a_i = 4/(tstep**2)*(u_i - u_list[i-1]) - 4/tstep*v_list[i-1] - a_list[i -1]
-                    a_list.append(a_i)
-                    if a_i > amax:
-                        amax = a_i
-            amaxlist.append(amax)
-        print(amaxlist)
+        #     
+        #     for i in range(0, len(trace.data)):
+        #         #print(i)
+        #         graccn = trace.data[i]
+        #         if i == 0:
+        #             u_i = 0
+        #             u_list.append(u_i)
+        #             v_i = 0
+        #             v_list.append(v_i)
+        #             a_i = 0
+        #             a_list.append(a_i)
+        #             if a_i > amax:
+        #                 amax = a_i
+        #         else:
+        #             p = graccn + a1*u_list[i-1] + a2*v_list[i-1] + a3*a_list[i-1]
+        #             u_i = p/(k + a1)
+        #             u_list.append(u_i)
+        #             v_i = 2*(u_i - u_list[i-1])/(tstep)- v_list[i-1]
+        #             v_list.append(v_i)
+        #             a_i = 4/(tstep**2)*(u_i - u_list[i-1]) - 4/tstep*v_list[i-1] - a_list[i -1]
+        #             a_list.append(a_i)
+        #             if a_i > amax:
+        #                 amax = a_i
+        #     amaxlist.append(amax)
+        # print(amaxlist)
 
-        plt.plot(Tslist, amaxlist)            
+        # plt.plot(Tslist, amaxlist)            
                     
-def test(p, m=0.4559, k=18, c=0.2865, s0=0, v0=0, p0=0):    
+def AvgAccnMethod(p, t_delta = 0.1, m=0.4559, k=18, c=0.2865, s0=0, v0=0, p0=0):    
     # 1.1
     a0 = (p0-c*v0-k*s0)/m
     print('a0=',a0)
 
-    #1.2
-    t_delta = 0.1
 
     #1.3
     a1 = 4/(t_delta**2)*m + 2/t_delta*c
@@ -127,10 +130,10 @@ def test(p, m=0.4559, k=18, c=0.2865, s0=0, v0=0, p0=0):
             u_b.append(temp_u_b)
             u_bb.append(temp_u_bb)
 
-    print('u list=',u)
-    print('u_b list=',u_b)
-    print('u_bb list = ', u_bb)
+    # print('u list=',u)
+    # print('u_b list=',u_b)
+    return u_bb
 
-p = [0.00,25.00,43.3013,50.0,43.3013,25.0,0.0,0.0,0.0,0.0,0.0]
-test(p)
+# p = [0.00,25.00,43.3013,50.0,43.3013,25.0,0.0,0.0,0.0,0.0,0.0]
+# test(p)
                         
