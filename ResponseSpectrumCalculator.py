@@ -46,7 +46,7 @@ def AvgAccnMethod(tracelist, alpha = 0.5, beta = 0.25, dampingratio = 5/100):
     
     for trace in tracelist: #to obtain peak ground acceleration for each structural period
         tstep = 1/trace.stats.sampling_rate 
-        for Ts in drange(0.03, 0.5, '0.1'):
+        for Ts in drange(0.03, 5, '0.1'):
             c = (2*math.pi/Ts)*dampingratio
             a1 = 4*m/((tstep)**2) + 2*c/tstep
             a2 = 4*m/(tstep) + c
@@ -59,33 +59,34 @@ def AvgAccnMethod(tracelist, alpha = 0.5, beta = 0.25, dampingratio = 5/100):
             #print(len(trace.data))
             Tslist.append(Ts)
             
-            for graccn in trace.data:
-                k = (4*m*math.pi**2)/(Ts**2)
-                for i in range(0, len(trace.data)):
-                    #print(i)
-                    if i == 0:
-                        u_i = 0
-                        u_list.append(u_i)
-                        v_i = 0
-                        v_list.append(v_i)
-                        a_i = 0
-                        a_list.append(a_i)
-                        if a_i > amax:
-                            amax = a_i
-                    else:
-                        p = graccn + a1*u_list[i-1] + a2*v_list[i-1] + a3*a_list[i-1]
-                        u_i = p/(k + a1)
-                        u_list.append(u_i)
-                        v_i = 2*(u_i - u_list[i-1])/(tstep)- v_list[i-1]
-                        v_list.append(v_i)
-                        a_i = 4/(tstep**2)*(u_i - u_list[i-1]) - 4/tstep*v_list[i-1] - a_list[i -1]
-                        a_list.append(a_i)
-                        if a_i > amax:
-                            amax = a_i
+            #for graccn in trace.data:
+            k = (4*m*math.pi**2)/(Ts**2)
+            for i in range(0, len(trace.data)):
+                #print(i)
+                graccn = trace.data[i]
+                if i == 0:
+                    u_i = 0
+                    u_list.append(u_i)
+                    v_i = 0
+                    v_list.append(v_i)
+                    a_i = 0
+                    a_list.append(a_i)
+                    if a_i > amax:
+                        amax = a_i
+                else:
+                    p = graccn + a1*u_list[i-1] + a2*v_list[i-1] + a3*a_list[i-1]
+                    u_i = p/(k + a1)
+                    u_list.append(u_i)
+                    v_i = 2*(u_i - u_list[i-1])/(tstep)- v_list[i-1]
+                    v_list.append(v_i)
+                    a_i = 4/(tstep**2)*(u_i - u_list[i-1]) - 4/tstep*v_list[i-1] - a_list[i -1]
+                    a_list.append(a_i)
+                    if a_i > amax:
+                        amax = a_i
             amaxlist.append(amax)
-        #print(u_list)
+        print(amaxlist)
 
-    return plt.plot(Tslist, amaxlist)            
+        plt.plot(Tslist, amaxlist)            
                     
     
                 

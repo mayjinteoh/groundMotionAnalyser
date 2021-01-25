@@ -200,7 +200,7 @@ class obspyInterface:
     self.eventid = eventid
     self.cat = self.client.get_events(eventid = self.eventid)
     self.start = self.cat[0].origins[0].time
-    self.end = self.start + 600
+    self.end = self.start + 240
     
     if plot == True:
       self.cat.plot(projection = "local")
@@ -222,10 +222,11 @@ class obspyInterface:
         else:
             self.maxev = ev
     self.start = self.maxev.origins[0].time
-    self.end = self.start + 600
+    self.end = self.start + 180
     return self.maxev
 
   def stations(self, location, maxrad, plot=False):
+    self.maxevent()
     geolocator = geoLocator()
     self.longitude = geolocator.getLongitude(location)
     self.latitude = geolocator.getLatitude(location)
@@ -256,6 +257,10 @@ class obspyInterface:
       tracelist = []
       for trace in self.st:
           if trace.stats.component == component:
+              #trace.plot()
+              trace.filter('bandpass', freqmax = 500, freqmin =0.2)
+              #trace.plot()
+              print(len(trace.data))
               tracelist.append(trace)
       return tracelist      
  
@@ -267,10 +272,9 @@ class obspyInterface:
 def main():
   obspyTest = obspyInterface('GEONET')
   print(obspyTest.SearchByDate(2016, 11, 13, 0, 23, 5))
-  print(obspyTest.maxevent())
+  #print(obspyTest.maxevent())
   print(obspyTest.stations('50 customhouse quay, wellington', 5))
-  print(obspyTest.getwaveforms('BOWS', plot=True))
-  #print(obspyTest.gettrace('CPLB'))
-  #print(obspyTest.getRS('WNKS', '1'))
+  #print(obspyTest.gettrace('BOWS', '1'))
+  print(obspyTest.getRS('BOWS', '1'))
 if __name__ == "__main__":
     main()
