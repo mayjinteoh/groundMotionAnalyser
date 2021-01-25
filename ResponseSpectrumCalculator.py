@@ -88,6 +88,49 @@ def AvgAccnMethod(tracelist, alpha = 0.5, beta = 0.25, dampingratio = 5/100):
 
         plt.plot(Tslist, amaxlist)            
                     
-    
-                
+def test(p, m=0.4559, k=18, c=0.2865, s0=0, v0=0, p0=0):    
+    # 1.1
+    a0 = (p0-c*v0-k*s0)/m
+    print('a0=',a0)
+
+    #1.2
+    t_delta = 0.1
+
+    #1.3
+    a1 = 4/(t_delta**2)*m + 2/t_delta*c
+    print('a1=',a1)
+    a2 = 4/t_delta*m + c
+    print('a2=',a2)
+    a3 = m
+    print('a3=',a3)
+
+    # 1.4
+    k_h = k + a1
+    print('k_h=',k_h)
+
+    #2.0
+    u = []
+    u_b = []
+    u_bb = []
+    for i in range(len(p)):
+        if i == 0:
+            u.append(0.0)
+            u_b.append(0.0)
+            u_bb.append(0.0)
+
+        else:
+            p_h = p[i] + a1*u[i-1] + a2*u_b[i-1] + a3*u_bb[i-1]
+            temp_u = p_h/k_h
+            temp_u_b = 2/t_delta*(temp_u-u[i-1]) - u_b[i-1]
+            temp_u_bb = 4/(t_delta**2)*(temp_u-u[i-1]) - 4/t_delta*u_b[i-1] - u_bb[i-1]
+            u.append(temp_u)
+            u_b.append(temp_u_b)
+            u_bb.append(temp_u_bb)
+
+    print('u list=',u)
+    print('u_b list=',u_b)
+    print('u_bb list = ', u_bb)
+
+p = [0.00,25.00,43.3013,50.0,43.3013,25.0,0.0,0.0,0.0,0.0,0.0]
+test(p)
                         
