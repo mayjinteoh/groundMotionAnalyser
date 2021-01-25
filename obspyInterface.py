@@ -28,6 +28,7 @@ from obspy.core.util import (BASEMAP_VERSION, CARTOPY_VERSION, MATPLOTLIB_VERSIO
 from obspy import Stream
 import math
 from geoLocator import *
+from ResponseSpectrumCalculator import *
 
 class obspyInterface:
   def __init__(self, client):
@@ -234,25 +235,28 @@ class obspyInterface:
                 self.st = self.client.get_waveforms(network.code, station.code, "*", "*",
                                           self.start, self.end, attach_response = True)
                  #refer to link for arguments for get waveforms: https://docs.obspy.org/packages/autogen/obspy.clients.fdsn.client.Client.get_waveforms.html?highlight=get_waveforms#obspy.clients.fdsn.client.Client.get_waveforms        
-                #self.st.plot()
+                self.st.plot()
     return self.st
     
-  def gettrace(self, stationcode):
+  def gettrace(self, stationcode, component):
       self.getwaveforms(stationcode)
+      tracelist = []
       for trace in self.st:
-          print(trace.stats)
-          print(type(trace.stats))
+          if trace.stats.component == component:
+              tracelist.append(trace)
+      return tracelist      
  
-    
- 
+  def getRS(self, stationcode, component):
+      tracelist = self.gettrace(stationcode, component)
+      AvgAccnMethod(tracelist)
 # Unit testing     
 def main():
   obspyTest = obspyInterface('GEONET')
   print(obspyTest.SearchByDate(2016, 11, 13, 0, 23, 5))
-  print(obspyTest.maxevent())
+  #print(obspyTest.maxevent())
   print(obspyTest.stations('50 customhouse quay, wellington', 5))
   #print(obspyTest.getwaveforms('CPLB'))
-  print(obspyTest.gettrace('CPLB'))
-  
+  #print(obspyTest.gettrace('CPLB'))
+  print(obspyTest.getRS('WNKS', '1'))
 if __name__ == "__main__":
     main()
