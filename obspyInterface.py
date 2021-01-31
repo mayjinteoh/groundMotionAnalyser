@@ -245,7 +245,7 @@ class obspyInterface:
     for network in self.inventory:
         for station in network:
             if stationcode == station.code:
-                self.st = self.client.get_waveforms(network.code, station.code, "*", "*",
+                self.st = self.client.get_waveforms(network.code, station.code, "HNZ,HNN,HNE,HN1,HN2", "*",
                                           self.start, self.end, attach_response = True)
                  #refer to link for arguments for get waveforms: https://docs.obspy.org/packages/autogen/obspy.clients.fdsn.client.Client.get_waveforms.html?highlight=get_waveforms#obspy.clients.fdsn.client.Client.get_waveforms        
                 if plot == True:
@@ -262,7 +262,7 @@ class obspyInterface:
               #trace.plot()
               print(len(trace.data))
               tracelist.append(trace)
-      return tracelist      
+      return tracelist
  
   def getRS(self, stationcode, component):
       tracelist = self.gettrace(stationcode, component)

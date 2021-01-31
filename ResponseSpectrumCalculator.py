@@ -27,7 +27,8 @@ __license__ = "GPLv3"
 
 import math
 import decimal
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
+from NZS1170Z_D import *
 
 def drange(x, y, jump):
   while x < y:
@@ -41,13 +42,14 @@ def RS(tracelist, alpha = 0.5, beta = 0.25, dampingratio = 5/100):
     init_v = 0 #initial ground velocity
     init_a = 0 #initial ground acceleration
     m = 1 #structure mass
-    ubbmax_list = []
-    Tslist = []
+    
     
     for trace in tracelist: #to obtain peak ground acceleration for each structural period
         t_delta = 1/trace.stats.sampling_rate 
         m = 1
-        for Ts in drange(0.03, 5, '0.1'):
+        ubbmax_list = []
+        Tslist = []
+        for Ts in drange(0.03, 7, '0.1'):
             c = (2*math.pi/Ts)*dampingratio
             k = (4*m*math.pi**2)/(Ts**2)
             # a1 = 4*m/((tstep)**2) + 2*c/tstep
@@ -62,8 +64,9 @@ def RS(tracelist, alpha = 0.5, beta = 0.25, dampingratio = 5/100):
             Tslist.append(Ts)
             ubb = AvgAccnMethod(trace.data, t_delta = t_delta, m = 1, k = k, c = c)
             ubbmax_list.append(max(ubb))
-    plt.plot(Tslist, ubbmax_list)    
-        
+        plt.plot(Tslist, ubbmax_list)    
+    print(ubbmax_list)
+    print(Tslist)    
             #for graccn in trace.data:
         #     
         #     for i in range(0, len(trace.data)):
@@ -93,7 +96,7 @@ def RS(tracelist, alpha = 0.5, beta = 0.25, dampingratio = 5/100):
 
         # plt.plot(Tslist, amaxlist)            
                     
-def AvgAccnMethod(p, t_delta = 0.1, m=0.4559, k=18, c=0.2865, s0=0, v0=0, p0=0):    
+def AvgAccnMethod(p, t_delta = 0.1, m = 0.4559, k = 18, c = 0.2865, s0=0, v0=0, p0=0):    
     # 1.1
     a0 = (p0-c*v0-k*s0)/m
     print('a0=',a0)
@@ -136,4 +139,77 @@ def AvgAccnMethod(p, t_delta = 0.1, m=0.4559, k=18, c=0.2865, s0=0, v0=0, p0=0):
 
 # p = [0.00,25.00,43.3013,50.0,43.3013,25.0,0.0,0.0,0.0,0.0,0.0]
 # test(p)
-                        
+def NZRS(subsoilclass, location, returnperiod): #Response Spectrum based on standard 1170.5
+    Tlist = []
+    RSlist = []
+    for T in range(0, 10, 1):
+        ChT(subsoilclass, T)
+        R(returnperiod)
+        Z(location)
+        N(T, returnperiod)
+            
+def ChT(subsoilclass, T):
+    if subsoilclass == "A" or subsoilclass == "B":
+        if T == 0:
+            return 1
+        elif T > 0 and T <= 0.1:
+            return 1 + 1.35*T/0.1
+        elif T > 0.1 and T < 0.3:
+            return 2.35
+        elif T >= 0.3 and T <= 1.5:
+            return 1.6*(0.5/5)**0.75
+        elif T > 1.5 and T <= 3:
+            return 1.05/ T
+        else:
+            return 3.15/T**2
+ 
+    elif subsoilclass == "C":
+        if T == 0:
+            return 1.33
+        elif T > 0 and T <= 0.1:
+            return 1.33 + 1.6*T/0.1
+        elif T > 0.1 and T < 0.3:
+            return 2.93
+        elif T >= 0.3 and T >= 1.5:
+            return 2*(0.5/T)**0.75
+        elif T > 1.5 and T <= 3:
+            return 1.32/T
+        else:
+            return 3.96/(T**2)
+     
+    elif subsoilclass == "D":
+        if T == 0:
+            return 1.12
+        elif T > 0 and T < 0.1:
+            return 1.12 + 1.88*T/0.1
+        elif T >= 0.1 and T < 0.56:
+            return 3
+        elif T >= 0.56 and T >= 1.5:
+            return 2.4*(0.75/T)**0.75
+        elif T > 1.5 and T <= 3:
+            return 2.14/T
+        else:
+            return 6.42/(T**2)  
+            
+    elif subsoilclass == "E":
+        if T == 0:
+            return 1.12
+        elif T > 0 and T < 0.1:
+            return 1.12 + 1.88*T/0.1
+        elif T >= 0.1 and T < 1:
+            return 3
+        elif T >= 1 and T <= 1.5:
+            return 3/(T**0.75)
+        elif T > 1.5 and T <= 3:
+            return 3.32/T
+        else:
+            return 9.96/(T**2)
+
+def R(returnperiod):
+    Rdict = {20: 0.2, 25: 0.25, 50: 0.35, 100: 0.5, 250: 0.75, 500: 1, 1000: 1.3, 2000: 1.7, 2500: 1.8} 
+    return Rdict[int(returnperiod)]    
+
+def Z(location):
+    return locationZ_D[location]['Z']
+    
+print(Z('Paraparaumu'))
