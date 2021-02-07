@@ -142,30 +142,30 @@ def AvgAccnMethod(p, t_delta = 0.1, m = 0.4559, k = 18, c = 0.2865, s0=0, v0=0, 
 def NZRS(subsoilclass, location, returnperiod): #Response Spectrum based on standard 1170.5
     Tlist = []
     RSlist = []
-    for T in drange(0, 10, '0.1'):
+    for T in drange(0.0, 10.0, '0.1'):
         Ch = ChT(subsoilclass, T)
         R_ = R(returnperiod)
         Z_ = Z(location)
         N_ = N(T, returnperiod, location)
         RS = Ch*R_*Z_*N_
         Tlist.append(T)
-        RSlist.append(RS)
+        RSlist.append(Ch)
     plt.plot(Tlist, RSlist)
             
 def ChT(subsoilclass, T):
     if subsoilclass == "A" or subsoilclass == "B":
-        if T == 0:
+        if T == 0.0:
             return 1
-        elif T > 0 and T <= 0.1:
-            return 1 + 1.35*T/0.1
+        elif T > 0.0 and T <= 0.1:
+            return 1.0 + 1.35*T/0.1
         elif T > 0.1 and T < 0.3:
             return 2.35
         elif T >= 0.3 and T <= 1.5:
-            return 1.6*(0.5/5)**0.75
+            return 1.6*(0.5/T)**0.75
         elif T > 1.5 and T <= 3:
             return 1.05/ T
         else:
-            return 3.15/T**2
+            return 3.15/(T**2)
  
     elif subsoilclass == "C":
         if T == 0:
@@ -174,7 +174,7 @@ def ChT(subsoilclass, T):
             return 1.33 + 1.6*T/0.1
         elif T > 0.1 and T < 0.3:
             return 2.93
-        elif T >= 0.3 and T >= 1.5:
+        elif T >= 0.3 and T <= 1.5:
             return 2*(0.5/T)**0.75
         elif T > 1.5 and T <= 3:
             return 1.32/T
@@ -188,7 +188,7 @@ def ChT(subsoilclass, T):
             return 1.12 + 1.88*T/0.1
         elif T >= 0.1 and T < 0.56:
             return 3
-        elif T >= 0.56 and T >= 1.5:
+        elif T >= 0.56 and T <= 1.5:
             return 2.4*(0.75/T)**0.75
         elif T > 1.5 and T <= 3:
             return 2.14/T
@@ -230,6 +230,7 @@ def N(T, returnperiod, location):
                 return Nmax
             elif T >= 4 and T <= 5: 
                 Nmax = 0.12*T + 1.12
+                return Nmax
             elif T > 1.5 and T < 4:
                 Nmax = 0.24*T + 0.64
                 return Nmax
@@ -242,6 +243,7 @@ def N(T, returnperiod, location):
                 return Nmax
             elif T >= 4 and T <= 5: 
                 Nmax = 0.12*T + 1.12
+                return Nmax
             elif T > 1.5 and T < 4:
                 Nmax = 0.24*T + 0.64
                 return Nmax
@@ -251,4 +253,4 @@ def N(T, returnperiod, location):
         else:
             return 1.0
         
-print(NZRS('D', 'Porirua', 1/500))
+print(NZRS('A', 'Wellington CBD', 1/2500))
