@@ -49,7 +49,7 @@ def RS(tracelist, alpha = 0.5, beta = 0.25, dampingratio = 5/100):
         m = 1
         ubbmax_list = []
         Tslist = []
-        for Ts in drange(0.03, 7, '0.1'):
+        for Ts in drange(0.1, 10, '0.1'):
             c = (2*math.pi/Ts)*dampingratio
             k = (4*m*math.pi**2)/(Ts**2)
             # a1 = 4*m/((tstep)**2) + 2*c/tstep
@@ -142,11 +142,15 @@ def AvgAccnMethod(p, t_delta = 0.1, m = 0.4559, k = 18, c = 0.2865, s0=0, v0=0, 
 def NZRS(subsoilclass, location, returnperiod): #Response Spectrum based on standard 1170.5
     Tlist = []
     RSlist = []
-    for T in range(0, 10, 1):
-        ChT(subsoilclass, T)
-        R(returnperiod)
-        Z(location)
-        N(T, returnperiod)
+    for T in drange(0, 10, '0.1'):
+        Ch = ChT(subsoilclass, T)
+        R_ = R(returnperiod)
+        Z_ = Z(location)
+        N_ = N(T, returnperiod, location)
+        RS = Ch*R_*Z_*N_
+        Tlist.append(T)
+        RSlist.append(RS)
+    plt.plot(Tlist, RSlist)
             
 def ChT(subsoilclass, T):
     if subsoilclass == "A" or subsoilclass == "B":
@@ -206,10 +210,45 @@ def ChT(subsoilclass, T):
             return 9.96/(T**2)
 
 def R(returnperiod):
-    Rdict = {20: 0.2, 25: 0.25, 50: 0.35, 100: 0.5, 250: 0.75, 500: 1, 1000: 1.3, 2000: 1.7, 2500: 1.8} 
-    return Rdict[int(returnperiod)]    
+    Rdict = {1/20: 0.2, 1/25: 0.25, 1/50: 0.35, 1/100: 0.5, 1/250: 0.75, 1/500: 1, 1/1000: 1.3, 1/2000: 1.7, 1/2500: 1.8} 
+    return Rdict[returnperiod]    
 
 def Z(location):
     return locationZ_D[location]['Z']
     
-print(Z('Paraparaumu'))
+def N(T, returnperiod, location):
+    D = locationZ_D[location]['D']
+    if D == None:
+        return 1.0
+    
+    if returnperiod >= 1/250:
+        return 1.0
+    else:
+        if D <= 2:
+            if T >= 5:
+                Nmax = 1.72
+                return Nmax
+            elif T >= 4 and T <= 5: 
+                Nmax = 0.12*T + 1.12
+            elif T > 1.5 and T < 4:
+                Nmax = 0.24*T + 0.64
+                return Nmax
+            else:
+                Nmax = 1.0
+                return Nmax
+        elif D > 2 and D <= 20:
+            if T >= 5:
+                Nmax = 1.72
+                return Nmax
+            elif T >= 4 and T <= 5: 
+                Nmax = 0.12*T + 1.12
+            elif T > 1.5 and T < 4:
+                Nmax = 0.24*T + 0.64
+                return Nmax
+            else:
+                Nmax = 1.0
+            return 1 + (Nmax - 1)*(20-D)/18
+        else:
+            return 1.0
+        
+print(NZRS('D', 'Porirua', 1/500))
